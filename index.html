@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地図テスト</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+        crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
+        crossorigin=""></script>
+    <style>
+        /* 全体の余白を0にする */
+        body {padding: 0; margin: 0}
+        /* 地図の高さを幅を画面サイズと同じにする */
+        html, body, #map {height: 100%; width: 100%;}
+    </style>
+    <script>
+        function geoFindMe() {
+
+            function success(position) {
+                // 定数latitudeに緯度を入れる
+                const latitude = position.coords.latitude;
+                // 定数longitudeに経度を入れる
+                const longitude = position.coords.longitude;
+
+                document.getElementById('find-me').style.display = 'none';
+                document.getElementById('status').style.display = 'none';
+
+                var map = L.map('map');
+
+                L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+                attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+                }).addTo(map);
+
+                map.setView([latitude, longitude], 17);
+                
+            }
+
+            var status = document.getElementById('status');
+            // エラーが出た場合
+            function error() {
+                status.textContent = "Unable to retrieve your location";
+            }
+            // 位置情報に対応していない場合
+            if (!navigator.geolocation) {
+                status.textContent = "このブラウザーは位置情報に対応していません";
+            // 位置情報に対応していたら
+            } else {
+                status.textContent = "位置情報を取得中…";
+                navigator.geolocation.getCurrentPosition(success, error);
+            }
+        }
+    </script>
+</head>
+<body>
+    <button id="find-me" onclick="geoFindMe()">現在の位置を表示</button>
+    <p id="status"></p>
+    <div id="map"></div>
+</body>
+</html>
