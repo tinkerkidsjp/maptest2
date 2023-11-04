@@ -1,41 +1,51 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>地図テスト</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
-        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-        crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
-        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
-        crossorigin=""></script>
-    <style>
-        /* 全体の余白を0にする */
-        body {padding: 0; margin: 0}
-        /* 地図の高さを幅を画面サイズと同じにする */
-        html, body, #map {height: 100%; width: 100%;}
-    </style>
-    <script>
-        function geoFindMe() {
+    <link rel="shortcut icon" href="https://cyberjapandata.gsi.go.jp/favicon.ico" />
 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title></title>
+
+    <script type="text/javascript"> 
+        var oMap      = null;
+
+        function Init(){
             function success(position) {
                 // 定数latitudeに緯度を入れる
-                const latitude = position.coords.latitude;
+                const latitude = String(Math.round(position.coords.latitude * 1000000) / 1000000);
                 // 定数longitudeに経度を入れる
-                const longitude = position.coords.longitude;
+                const longitude = String(Math.round(position.coords.longitude * 1000000) / 1000000);
 
                 document.getElementById('find-me').style.display = 'none';
                 document.getElementById('status').style.display = 'none';
 
-                var map = L.map('map');
+                var vURL      = "https://maps.gsi.go.jp";
+                var vURL_Site = "/index_pm.html?postmessage=1#15/" + latitude + "/" + longitude + "/&base=std&ls=std%7Cskhb04&disp=11&vs=c1g1j0h0k0l0u0t0z0r0s0m0f1";
 
-                L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-                attribution: "<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
-                }).addTo(map);
+                oMap = document.createElement("iframe");
+                oMap.style.display = "none";
+    
+                EvtResize();
+                oMap.src = vURL + vURL_Site;
+                oMap.onload = function(){
+                    var oContent   = oMap.contentWindow;
+                    var ClientMode = {
+                        baseUrl     : null
+                        , location    : null
+                        , LayerJS     : null
+                        , sakuzuList  : null
+                        , queryString : null
+                    };
 
-                map.setView([latitude, longitude], 17);
-                
+                    ClientMode.sakuzuList = [{"fileName":"","visible":true,"features":[]}];
+
+                    oContent.postMessage(ClientMode, vURL);
+                };
+
+                document.body.appendChild(oMap);
             }
 
             var status = document.getElementById('status');
@@ -51,12 +61,34 @@
                 status.textContent = "位置情報を取得中…";
                 navigator.geolocation.getCurrentPosition(success, error);
             }
+
+            
+        };
+
+        function EvtResize(){
+	        var w = window.innerWidth;
+	        var h = window.innerHeight;
+            if(oMap != null){
+                oMap.style.width   = w + "px";
+                oMap.style.height  = h + "px";
+                if(oMap.style.display == "none"){
+                    oMap.style.display = "block";
+                }
+            }
+        };
+
+        window.onload   = function(){
+            document.body.style.margin   = "0px";
+            document.body.style.padding  = "0px";
+            document.body.style.overflow = "hidden";
+
+            //Init();
         }
+        window.onresize = EvtResize;
     </script>
 </head>
 <body>
-    <button id="find-me" onclick="geoFindMe()">現在の位置を表示</button>
-    <p id="status"></p>
-    <div id="map"></div>
+<button onclick="Init()" id="find-me">現在地付近の避難所を表示</button>
+<p id="status"></p>
 </body>
 </html>
